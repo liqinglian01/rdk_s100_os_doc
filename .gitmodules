@@ -1,0 +1,6 @@
+[submodule "rdk_s100_algorithm_application_doc"]
+	path = rdk_s100_algorithm_application_doc
+	url = https://github.com/liqinglian01/rdk_s100_algorithm_application_doc.git
+[submodule "rdk_s100_robot_development_doc"]
+	path = rdk_s100_robot_development_doc
+	url = https://github.com/liqinglian01/rdk_s100_robot_development_doc.git

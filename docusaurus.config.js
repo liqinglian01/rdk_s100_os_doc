@@ -139,14 +139,14 @@ const config = {
   favicon: "img/logo.png",
 
   url: "https://developer.d-robotics.cc",
-  baseUrl: "/rdk_x3_doc/",
+  baseUrl: "/rdk_s100_os_doc/",
 
   organizationName: "D-Robotics",
-  projectName: "rdk_x3_os_doc",
+  projectName: "rdk_s100_os_doc",
 
   customFields: {
     docsInstanceDisplayNames: {
-      default: "RDK X3 OS",
+      default: "RDK S100 OS",
       rdk_s100_algorithm_application_doc: "Model Zoo",
       rdk_s100_robot_development_doc: "TogetheROS.Bot",
     },
@@ -162,7 +162,7 @@ const config = {
     },
     // Dify Chatbot Configuration
     {
-      src: "/rdk_s100_doc/js/dify-config.js",
+      src: "/rdk_s100_os_doc/js/dify-config.js",
     },
     {
       src: "https://rdk.d-robotics.cc/embed.min.js",
@@ -265,7 +265,7 @@ const config = {
           type: "docSidebar",
           sidebarId: "tutorialSidebar",
           position: "left",
-          label: "RDK X3 OS",
+          label: "RDK S100 OS",
         },
         {
           type: "docsVersionDropdown",
