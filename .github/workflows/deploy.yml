@@ -3,25 +3,37 @@ name: Deploy Docusaurus site to GitHub Pages
 on:
   push:
     branches:
-      - main  # 当 main 分支有推送时触发部署
-  workflow_dispatch: # 允许手动触发
+      - main
+
+  workflow_run:
+    workflows: ["Sync submodules to latest main"]  
+    types:
+      - completed
+
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    # 👇 核心判断逻辑（关键！！！）
+    if: |
+      (github.event_name == 'push' && github.actor != 'github-actions[bot]') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success')
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        # Docusaurus 依赖 rdk_s100_algorithm_application_doc / rdk_s100_robot_development_doc 等子模块中的 sidebars、docs
         submodules: recursive
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '24'  # 使用 Node.js 24 版本
+        node-version: '24'
         cache: 'npm'
+
     - name: Clean install dependencies
       run: |
         rm -rf node_modules
@@ -30,18 +42,11 @@ jobs:
     - name: Build Docusaurus site
       run: npm run build
 
-    - name: Debug env variables
-      run: |
-        echo "GIT_USER: ${{ secrets.GITHUB_ACTOR }}"
-        echo "GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
-        echo "GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}"
-
-        
     - name: Configure Git
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        
+
     - name: Setup SSH
       run: |
         mkdir -p ~/.ssh

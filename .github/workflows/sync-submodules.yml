@@ -49,7 +49,7 @@ jobs:
           submodules: recursive
           fetch-depth: 0
           # PAT 推送才会触发 push → main 上的 deploy.yml；GITHUB_TOKEN 推送不会触发其它 workflow
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
         run: |
