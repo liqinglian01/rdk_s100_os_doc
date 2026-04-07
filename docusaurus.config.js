@@ -138,10 +138,10 @@ const config = {
   title: "RDK X3 DOC",
   favicon: "img/logo.png",
 
-  url: "https://developer.d-robotics.cc",
+  url: "https://liqinglian01.github.io",
   baseUrl: "/rdk_s100_os_doc/",
 
-  organizationName: "D-Robotics",
+  organizationName: "liqinglian01",
   projectName: "rdk_s100_os_doc",
 
   customFields: {
