@@ -13,6 +13,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        # Docusaurus 依赖 rdk_s100_algorithm_application_doc / rdk_s100_robot_development_doc 等子模块中的 sidebars、docs
+        submodules: recursive
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
