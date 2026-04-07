@@ -17,6 +17,9 @@
 #               https://api.github.com/repos/<owner>/rdk_s100_os_doc/dispatches \
 #               -d '{"event_type":"sync-submodules","client_payload":{"source":"${{ github.repository }}"}}'
 #   需在子仓库 Secrets 中配置 PARENT_REPO_TOKEN（classic PAT 或 fine-grained，需 repo scope）。
+#
+# 主仓库说明：本 job 若用 GITHUB_TOKEN 推送到 main，GitHub 不会因此再触发其它 workflow，
+# deploy.yml 将不会运行，github.io 不会更新。checkout / push 必须使用 PAT（见下方 PAT_TOKEN）。
 
 name: Sync submodules to latest main
 
@@ -45,7 +48,8 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # PAT 推送才会触发 push → main 上的 deploy.yml；GITHUB_TOKEN 推送不会触发其它 workflow
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Configure Git
         run: |
