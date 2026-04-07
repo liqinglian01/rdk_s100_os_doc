@@ -87,11 +87,7 @@
     "message": "5. Robotics Application",
     "description": "The label for category 5. 机器人应用开发 in sidebar tutorialSidebar"
   },
-<<<<<<< HEAD
-   "sidebar.tutorialSidebar.category.5. 机器人应用开发.link.generated-index.description": {
-=======
   "sidebar.tutorialSidebar.category.5. 机器人应用开发.link.generated-index.description": {
->>>>>>> bc29e31 (Init commit)
     "message": "Robotics Application Development",
     "description": "The generated-index page description for category 5. 机器人应用开发 in sidebar tutorialSidebar"
   },
@@ -319,8 +315,4 @@
     "message": "1.1 Hardware Introduction",
     "description": "The generated-index page title for category 1.1 硬件简介 in sidebar tutorialSidebar"
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> bc29e31 (Init commit)
