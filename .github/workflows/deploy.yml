@@ -37,10 +37,10 @@ jobs:
         echo "GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}"
 
         
-    - name: Set up Git config
+    - name: Configure Git
       run: |
-        git config --global user.email ""
-        git config --global user.name ""
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
         
     - name: Setup SSH
       run: |
