@@ -1,10 +1,6 @@
 {
   "version.label": {
-<<<<<<< HEAD
-    "message": "Next",
-=======
     "message": "V1.0.5",
->>>>>>> bc29e31 (Init commit)
     "description": "The label for version current"
   },
   "sidebar.tutorialSidebar.category.1. 快速开始": {
