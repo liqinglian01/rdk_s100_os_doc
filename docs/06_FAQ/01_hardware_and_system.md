@@ -520,15 +520,9 @@ ROS2官方软件源GPG签名密钥更新，导致本地配置过期。
 * 上述步骤是一个通用流程，具体命令和细节可能因您的Linux发行版、内核版本以及Secure Boot的配置状态而有所不同。
 * **请务必参考您所使用的Linux发行版和内核版本的官方文档中关于“内核模块签名 (Kernel Module Signing)”的详细指南。**
 * 地瓜机器人官方RDK文档中关于“Linux开发”或“驱动开发”的章节，也可能包含针对RDK平台的具体模块签名指导：
-    <Tabs groupId="sign_ko">
-
-    <TabItem value="rdk_x3_x5" label="rdk_x3_x5">
-    [内核头文件与模块编译](/05_Advanced_development/02_linux_development/02_kernel_headers.md) (请查找此文档中关于模块签名的具体章节)。
-    </TabItem>
-    <TabItem value="rdk_s100" label="rdk_s100">
+    
     [内核头文件与模块编译](/rdk_s/Advanced_development/linux_development/kernel_headers) (请查找此文档中关于模块签名的具体章节)。
-    </TabItem>
-    </Tabs>
+    
 
 ### Q23: 在编译大型项目（如使用gcc/make/cmake/colcon构建ROS2工作空间）或运行内存消耗较大的工具（如`hb_mapper`模型转换）时，遇到内存不足的错误怎么办？
 **A:** 内存不足（Out of Memory, OOM）是嵌入式设备或资源受限的开发机上编译大型项目或运行内存密集型应用时常见的问题。以下是一些解决方法：
