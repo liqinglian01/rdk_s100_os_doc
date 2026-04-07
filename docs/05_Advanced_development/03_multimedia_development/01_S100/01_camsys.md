@@ -4181,7 +4181,6 @@ sunrise@ubuntu:/app/multimedia_demo/camsys_demo/sample_2v_219_stitch_codec$ ./sa
 
 STITCH配置参数：
 
-{% raw %}
 ```c
 struct stitch_base_attr sth_base_attr = {
 		  .mode = 2,
@@ -4402,7 +4401,6 @@ struct stitch_ch_attr sth_och_attr = {
 		  }
 };
 ```
-{% endraw %}
 
 创建一路vflow:
 ```c
