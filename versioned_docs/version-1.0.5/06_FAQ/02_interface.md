@@ -4,10 +4,7 @@ sidebar_position: 2
 
 # 6.2 接口、外设与驱动
 
-```mdx-code-block
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-```
+
 
 ### 40PIN接口
 
@@ -58,15 +55,9 @@ import TabItem from '@theme/TabItem';
     * 使用 `route -n` 查看路由表信息。
     * 使用 `ping <网关IP>` 测试到网关的连通性。
 5.  **参考官方文档：** 详细的网络配置步骤和故障排除方法，请参考官方文档中关于“网络配置”的章节。
-    <Tabs groupId="network_conf">
-    <TabItem value="rdk_x3/x5" label="rdk_x3/x5">
-    [RDK X3/X5 网络配置](../System_configuration/network_blueteeth)
-    </TabItem>
-    <TabItem value="rdk_s100" label="rdk_s100">
+    
     [RDK S100 网络配置](/rdk_s/System_configuration/network_bluetooth)
-    </TabItem>
-    </Tabs>
-
+  
 
 #### Q5: 开发板无法通过SSH远程连接，可能是什么原因？
 **A:**
@@ -174,17 +165,9 @@ import TabItem from '@theme/TabItem';
     * **连接器锁紧：** 确保FPC排线已完全插入连接器，并且连接器两端的卡扣已牢固锁紧。
     * **接口对应：** 如果板卡有多个MIPI CSI接口，确保摄像头连接到了您在软件配置或设备树中指定的那个接口。
     * **参考文档：** 仔细查阅您所使用的RDK板卡型号对应的硬件手册或快速入门指南中关于“MIPI摄像头”连接的章节，确认连接细节。
-        <Tabs groupId="network_conf">
-        <TabItem value="rdk_x3" label="rdk_x3">
-        [RDK X3 MIPI摄像头](../01_Quick_start/hardware_introduction/rdk_x3.md)
-        </TabItem>
-        <TabItem value="rdk_x5" label="rdk_x5">
-        [RDK X5 MIPI摄像头](../01_Quick_start/hardware_introduction/rdk_x5.md)
-        </TabItem>
-        <TabItem value="rdk_s100" label="rdk_s100">
+        
         [RDK S100 MIPI摄像头](/rdk_s/Quick_start/hardware_introduction/rdk_s100_camera_expansion_board)
-        </TabItem>
-        </Tabs>
+       
 2.  **禁止带电插拔：**
     * **严禁在开发板通电的情况下插拔MIPI摄像头！** 带电操作极易因瞬间的电流冲击或引脚接触顺序错误而导致摄像头模组或板卡MIPI接口电路短路损坏。
 3.  **I2C总线和地址：**
