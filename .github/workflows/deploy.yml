@@ -36,8 +36,8 @@ jobs:
         
     - name: Set up Git config
       run: |
-        git config --global user.email "2560288119@qq.com"
-        git config --global user.name "liqinglian01"
+        git config --global user.email ""
+        git config --global user.name ""
         
     - name: Setup SSH
       run: |
