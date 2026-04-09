@@ -1,36 +1,87 @@
-# 子仓库 main 更新后通知主仓库：在子仓库配置 workflow，于 push 到 main 时
-# 调用 repository_dispatch（见下方「子仓库示例」）。本 workflow 拉取各子模块最新 main、
-# 若有变更则提交并 push 到主仓库 main，从而触发现有的 deploy.yml 完成部署。
-#
-# 子仓库示例（.github/workflows/notify-parent.yml）:
-#   on:
-#     push:
-#       branches: [main]
-#   jobs:
-#     notify:
-#       runs-on: ubuntu-latest
-#       steps:
-#         - run: |
-#             curl -sS -X POST \
-#               -H "Accept: application/vnd.github+json" \
-#               -H "Authorization: Bearer ${{ secrets.PARENT_REPO_TOKEN }}" \
-#               https://api.github.com/repos/<owner>/rdk_s100_os_doc/dispatches \
-#               -d '{"event_type":"sync-submodules","client_payload":{"source":"${{ github.repository }}"}}'
-#   需在子仓库 Secrets 中配置 PARENT_REPO_TOKEN（classic PAT 或 fine-grained，需 repo scope）。
-#
-# 主仓库说明：本 job 若用 GITHUB_TOKEN 推送到 main，GitHub 不会因此再触发其它 workflow，
-# deploy.yml 将不会运行，github.io 不会更新。checkout / push 必须使用 PAT（见下方 PAT_TOKEN）。
+# name: Sync submodules to latest main
 
-name: Sync submodules to latest main
+# on:
+#   repository_dispatch:
+#     types: [sync-submodules]
+#   workflow_dispatch:
+
+#   # 可选：定期轮询（取消下行注释）。无法做到实时，仅作未配置子仓库 dispatch 时的兜底。
+#   # schedule:
+#   #   - cron: "0 */6 * * *"
+
+# concurrency:
+#   group: sync-submodules-${{ github.repository }}
+#   cancel-in-progress: true
+
+# permissions:
+#   contents: write
+
+# jobs:
+#   sync:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout with submodules
+#         uses: actions/checkout@v4
+#         with:
+#           submodules: recursive
+#           fetch-depth: 0
+#           token: ${{ secrets.GITHUB_TOKEN }}
+
+#       - name: Configure Git
+#         run: |
+#           git config user.name "github-actions[bot]"
+#           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+#       - name: Bump submodules to origin/main
+#         env:
+#           SOURCE: ${{ github.event.client_payload.source || 'manual/schedule' }}
+#         run: |
+#           set -euo pipefail
+#           echo "Trigger source: ${SOURCE}"
+#           git submodule sync --recursive
+#           git submodule update --init --recursive
+
+#           bump() {
+#             local dir="$1"
+#             if [ ! -e "$dir" ]; then
+#               echo "::warning::Path missing, skip: $dir"
+#               return 0
+#             fi
+#             git -C "$dir" fetch origin main
+#             git -C "$dir" checkout -B main origin/main
+#           }
+
+#           bump rdk_s100_algorithm_application_doc
+#           bump rdk_s100_robot_development_doc
+
+#           # algorithm 仓库内嵌套的 rdk_s100_robot_development_doc
+#           NESTED="rdk_s100_algorithm_application_doc/rdk_s100_robot_development_doc"
+#           if [ -e "$NESTED" ]; then
+#             git -C "$NESTED" fetch origin main
+#             git -C "$NESTED" checkout -B main origin/main
+#           fi
+
+#           git add rdk_s100_algorithm_application_doc rdk_s100_robot_development_doc
+
+#           if git diff --cached --quiet; then
+#             echo "::notice::No submodule pointer changes — already up to date."
+#             exit 0
+#           fi
+
+#           git commit -m "chore: sync submodules to latest main (${SOURCE})"
+#           git push origin HEAD:main
+
+# 主仓库：.github/workflows/sync-on-subrepo-update.yml
+name: Sync when submodule updates
 
 on:
-  repository_dispatch:
-    types: [sync-submodules]
-  workflow_dispatch:
-
-  # 可选：定期轮询（取消下行注释）。无法做到实时，仅作未配置子仓库 dispatch 时的兜底。
-  # schedule:
-  #   - cron: "0 */6 * * *"
+  workflow_run:
+    workflows: ["CI"]  # 必须与子仓库的 workflow 名称完全一致
+    repositories:
+      - "liqinglian01/rdk_s100_algorithm_application_doc"  # 子仓库1
+      - "liqinglian01/rdk_s100_robot_development_doc"      # 子仓库2（如需）
+    types:
+      - completed
 
 concurrency:
   group: sync-submodules-${{ github.repository }}
@@ -41,6 +92,8 @@ permissions:
 
 jobs:
   sync:
+    # 仅在子仓库的 CI 成功时执行
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout with submodules
@@ -48,7 +101,6 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-          # PAT 推送才会触发 push → main 上的 deploy.yml；GITHUB_TOKEN 推送不会触发其它 workflow
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
@@ -57,11 +109,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Bump submodules to origin/main
-        env:
-          SOURCE: ${{ github.event.client_payload.source || 'manual/schedule' }}
         run: |
           set -euo pipefail
-          echo "Trigger source: ${SOURCE}"
           git submodule sync --recursive
           git submodule update --init --recursive
 
@@ -78,7 +127,6 @@ jobs:
           bump rdk_s100_algorithm_application_doc
           bump rdk_s100_robot_development_doc
 
-          # algorithm 仓库内嵌套的 rdk_s100_robot_development_doc
           NESTED="rdk_s100_algorithm_application_doc/rdk_s100_robot_development_doc"
           if [ -e "$NESTED" ]; then
             git -C "$NESTED" fetch origin main
@@ -92,5 +140,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: sync submodules to latest main (${SOURCE})"
+          git commit -m "chore: sync submodules to latest main (triggered by subrepo update)"
           git push origin HEAD:main

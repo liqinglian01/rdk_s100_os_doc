@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # 👇 核心判断逻辑（关键！！！）
+    # 判断逻辑
     if: |
       (github.event_name == 'push' && github.actor != 'github-actions[bot]') ||
       (github.event_name == 'workflow_run' &&
