@@ -6,7 +6,7 @@ on:
       - main
 
   workflow_run:
-    workflows: ["Sync submodules to latest main"]  
+    workflows: ["Sync submodules"]
     types:
       - completed
 
@@ -16,11 +16,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # 判断逻辑
+    # 判断逻辑：人工 push / 手动运行 deploy / 子模块同步 workflow 成功完成后构建
     if: |
+      github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' && github.actor != 'github-actions[bot]') ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success')
+
 
     steps:
     - name: Checkout repository

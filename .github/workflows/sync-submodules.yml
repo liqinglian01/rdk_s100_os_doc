@@ -1,87 +1,8 @@
-# name: Sync submodules to latest main
-
-# on:
-#   repository_dispatch:
-#     types: [sync-submodules]
-#   workflow_dispatch:
-
-#   # 可选：定期轮询（取消下行注释）。无法做到实时，仅作未配置子仓库 dispatch 时的兜底。
-#   # schedule:
-#   #   - cron: "0 */6 * * *"
-
-# concurrency:
-#   group: sync-submodules-${{ github.repository }}
-#   cancel-in-progress: true
-
-# permissions:
-#   contents: write
-
-# jobs:
-#   sync:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout with submodules
-#         uses: actions/checkout@v4
-#         with:
-#           submodules: recursive
-#           fetch-depth: 0
-#           token: ${{ secrets.GITHUB_TOKEN }}
-
-#       - name: Configure Git
-#         run: |
-#           git config user.name "github-actions[bot]"
-#           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-#       - name: Bump submodules to origin/main
-#         env:
-#           SOURCE: ${{ github.event.client_payload.source || 'manual/schedule' }}
-#         run: |
-#           set -euo pipefail
-#           echo "Trigger source: ${SOURCE}"
-#           git submodule sync --recursive
-#           git submodule update --init --recursive
-
-#           bump() {
-#             local dir="$1"
-#             if [ ! -e "$dir" ]; then
-#               echo "::warning::Path missing, skip: $dir"
-#               return 0
-#             fi
-#             git -C "$dir" fetch origin main
-#             git -C "$dir" checkout -B main origin/main
-#           }
-
-#           bump rdk_s100_algorithm_application_doc
-#           bump rdk_s100_robot_development_doc
-
-#           # algorithm 仓库内嵌套的 rdk_s100_robot_development_doc
-#           NESTED="rdk_s100_algorithm_application_doc/rdk_s100_robot_development_doc"
-#           if [ -e "$NESTED" ]; then
-#             git -C "$NESTED" fetch origin main
-#             git -C "$NESTED" checkout -B main origin/main
-#           fi
-
-#           git add rdk_s100_algorithm_application_doc rdk_s100_robot_development_doc
-
-#           if git diff --cached --quiet; then
-#             echo "::notice::No submodule pointer changes — already up to date."
-#             exit 0
-#           fi
-
-#           git commit -m "chore: sync submodules to latest main (${SOURCE})"
-#           git push origin HEAD:main
-
-# 主仓库：.github/workflows/sync-on-subrepo-update.yml
 name: Sync when submodule updates
 
 on:
-  workflow_run:
-    workflows: ["CI"]  # 必须与子仓库的 workflow 名称完全一致
-    repositories:
-      - "liqinglian01/rdk_s100_algorithm_application_doc"  # 子仓库1
-      - "liqinglian01/rdk_s100_robot_development_doc"      # 子仓库2（如需）
-    types:
-      - completed
+  repository_dispatch:
+    types: [submodule-updated]
 
 concurrency:
   group: sync-submodules-${{ github.repository }}
@@ -92,53 +13,66 @@ permissions:
 
 jobs:
   sync:
-    # 仅在子仓库的 CI 成功时执行
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+
     steps:
+      - name: Show trigger info
+        run: |
+          echo "From repo: ${{ github.event.client_payload.repo }}"
+          echo "Commit: ${{ github.event.client_payload.sha }}"
+
       - name: Checkout with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump submodules to origin/main
+      - name: Sync submodules
         run: |
           set -euo pipefail
+
           git submodule sync --recursive
           git submodule update --init --recursive
 
           bump() {
             local dir="$1"
-            if [ ! -e "$dir" ]; then
-              echo "::warning::Path missing, skip: $dir"
-              return 0
+            if [ ! -d "$dir" ]; then
+              echo "::warning::Missing: $dir"
+              return
             fi
+            echo "Updating $dir"
             git -C "$dir" fetch origin main
             git -C "$dir" checkout -B main origin/main
           }
 
-          bump rdk_s100_algorithm_application_doc
-          bump rdk_s100_robot_development_doc
+          # 只更新被触发的子仓库
+          CHANGED="${{ github.event.client_payload.repo }}"
 
-          NESTED="rdk_s100_algorithm_application_doc/rdk_s100_robot_development_doc"
-          if [ -e "$NESTED" ]; then
-            git -C "$NESTED" fetch origin main
-            git -C "$NESTED" checkout -B main origin/main
+          if [[ "$CHANGED" == *"algorithm_application_doc"* ]]; then
+            bump rdk_s100_algorithm_application_doc
           fi
 
-          git add rdk_s100_algorithm_application_doc rdk_s100_robot_development_doc
+          if [[ "$CHANGED" == *"robot_development_doc"* ]]; then
+            bump rdk_s100_robot_development_doc
+          fi
+
+          # 嵌套 submodule
+          NESTED="rdk_s100_algorithm_application_doc/rdk_s100_robot_development_doc"
+          if [ -d "$NESTED" ]; then
+            bump "$NESTED"
+          fi
+
+          git add .
 
           if git diff --cached --quiet; then
-            echo "::notice::No submodule pointer changes — already up to date."
+            echo "No changes"
             exit 0
           fi
 
-          git commit -m "chore: sync submodules to latest main (triggered by subrepo update)"
+          git commit -m "chore: sync submodules (GitHub App)"
           git push origin HEAD:main
