@@ -1,6 +1,7 @@
 /**
  * Swizzled from @docusaurus/theme-classic DocVersionBanner:
- * unmaintained banner uses one combined sentence (zh copy), link target unchanged.
+ * Latest published (isLast) + unmaintained: same zh/en copy (product table + top-nav hint).
+ * Unreleased (Next): classic unreleased + latest-version suggestion.
  */
 import React from 'react';
 import clsx from 'clsx';
@@ -16,6 +17,8 @@ import {
   useDocsPreferredVersion,
   useDocsVersion,
 } from '@docusaurus/plugin-content-docs/client';
+
+import styles from './styles.module.css';
 
 function UnreleasedVersionLabel({siteTitle, versionMetadata}) {
   return (
@@ -69,69 +72,83 @@ function LatestVersionSuggestionLabel({versionLabel, to, onClick}) {
   );
 }
 
-function UnmaintainedCombinedBanner({
-  className,
-  siteTitle,
-  versionMetadata,
-  latestVersionSuggestedDoc,
-  latestVersionSuggestion,
-  savePreferredVersionName,
-}) {
+function UnmaintainedVersionBannerTable({locale}) {
+  const isZh = locale === 'zh-Hans';
+  const hProduct = isZh ? '所属产品' : 'Product';
+  const hChain = isZh ? '算法工具链' : 'Algorithm toolchain';
+  const rowLabel = isZh ? '版本关联关系' : 'Version mapping';
+
+  return (
+    <div className={clsx(styles.tableSurface, 'margin-top--md')}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>{hProduct}</th>
+            <th>RDK S100 OS</th>
+            <th>ModelZoo</th>
+            <th>TogetheROS</th>
+            <th>{hChain}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th rowSpan={2}>{rowLabel}</th>
+            <td>1.0.0</td>
+            <td>1.0.1</td>
+            <td>1.0.6</td>
+            <td>2.6.6</td>
+          </tr>
+          <tr>
+            <td>1.0.5</td>
+            <td>1.0.1</td>
+            <td>1.0.5</td>
+            <td>2.2.6</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function VersionInfoCombinedBanner({className, siteTitle, versionMetadata}) {
   const {
     i18n: {currentLocale},
   } = useDocusaurusContext();
-
-  const link = (
-    <b>
-      <Link
-        to={latestVersionSuggestedDoc.path}
-        onClick={() =>
-          savePreferredVersionName(latestVersionSuggestion.name)
-        }>
-        {currentLocale === 'zh-Hans' ? (
-          '最新版本'
-        ) : (
-          <Translate
-            id="theme.docs.versions.latestVersionLinkLabel"
-            description="The label used for the latest version suggestion link label">
-            latest version
-          </Translate>
-        )}
-      </Link>
-    </b>
-  );
 
   return (
     <div
       className={clsx(
         className,
         ThemeClassNames.docs.docVersionBanner,
+        styles.banner,
         'alert alert--warning margin-bottom--md',
       )}
       role="alert">
       <div>
         {currentLocale === 'zh-Hans' ? (
-          <>
-            此为 {siteTitle} <b>{versionMetadata.label}</b>{' '}
-            版的文档，最新的文档请参阅 {link} (
-            {latestVersionSuggestion.label})
-          </>
+          <div>
+            当前正在阅读<b>
+              {' '}
+              {siteTitle} {versionMetadata.label}{' '}
+            </b>
+            文档。
+            <br />
+            与其他产品版本对应关系参见下表，查阅时请在顶部导航选择对应版本。
+          </div>
         ) : (
-          <Translate
-            id="theme.docs.versions.unmaintainedVersionCombinedLabel"
-            description="Combined unmaintained version banner (single sentence)"
-            values={{
-              siteTitle,
-              versionLabel: <b>{versionMetadata.label}</b>,
-              latestVersionLabel: latestVersionSuggestion.label,
-              latestVersionLink: link,
-            }}>
-            {
-              'This is documentation for {siteTitle} {versionLabel}. For the latest documentation, see {latestVersionLink} ({latestVersionLabel}).'
-            }
-          </Translate>
+          <div>
+            You are currently reading the{' '}
+            <b>
+              {siteTitle} {versionMetadata.label}
+            </b>{' '}
+            documentation.
+            <br />
+            See the table below for how versions map across products. When
+            browsing, select the matching version from the top navigation.
+          </div>
         )}
       </div>
+      <UnmaintainedVersionBannerTable locale={currentLocale} />
     </div>
   );
 }
@@ -151,18 +168,15 @@ function DocVersionBannerEnabled({className, versionMetadata}) {
   const latestVersionSuggestedDoc =
     latestDocSuggestion ?? getVersionMainDoc(latestVersionSuggestion);
 
-  if (versionMetadata.banner === 'unmaintained') {
-    if (!latestVersionSuggestedDoc?.path) {
-      return null;
-    }
+  const useVersionTableBanner =
+    versionMetadata.banner === 'unmaintained' || versionMetadata.isLast === true;
+
+  if (useVersionTableBanner) {
     return (
-      <UnmaintainedCombinedBanner
+      <VersionInfoCombinedBanner
         className={className}
         siteTitle={siteTitle}
         versionMetadata={versionMetadata}
-        latestVersionSuggestedDoc={latestVersionSuggestedDoc}
-        latestVersionSuggestion={latestVersionSuggestion}
-        savePreferredVersionName={savePreferredVersionName}
       />
     );
   }
@@ -191,13 +205,14 @@ function DocVersionBannerEnabled({className, versionMetadata}) {
 
 export default function DocVersionBanner({className}) {
   const versionMetadata = useDocsVersion();
-  if (versionMetadata.banner) {
-    return (
-      <DocVersionBannerEnabled
-        className={className}
-        versionMetadata={versionMetadata}
-      />
-    );
+  /** 最新发布版 banner 为 null；旧版为 unmaintained；Next 为 unreleased */
+  if (!versionMetadata.isLast && !versionMetadata.banner) {
+    return null;
   }
-  return null;
+  return (
+    <DocVersionBannerEnabled
+      className={className}
+      versionMetadata={versionMetadata}
+    />
+  );
 }

@@ -1,0 +1,70 @@
+/**
+ * Infima 中 --ifm-background-color 默认为 transparent，在 alert 内无法遮住警告底。
+ * 使用与导航/正文卡片一致的 --ifm-background-surface-color，并固定表格行/表头条纹变量，避免继承 alert 色。
+ */
+
+/** 文档页栅格为 flex 子项时，显式拉满主栏宽度 */
+.banner {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.tableSurface {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  background-color: var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+  border-radius: var(--ifm-global-radius);
+  overflow-x: auto;
+  box-shadow: inset 0 0 0 1px var(--ifm-table-border-color);
+}
+
+/**
+ * Infima 将 table 设为 display:block，宽度常随内容收缩，无法铺满横幅。
+ * 恢复表格布局并强制拉满容器宽度。
+ */
+.table {
+  display: table !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-bottom: 0;
+}
+
+.tableSurface :global(thead) {
+  background-color: var(--ifm-table-stripe-background);
+}
+
+.tableSurface :global(tbody tr) {
+  background-color: var(--ifm-table-background);
+}
+
+.tableSurface :global(tbody tr:nth-child(2n)) {
+  background-color: var(--ifm-table-stripe-background);
+}
+
+.tableSurface :global(th),
+.tableSurface :global(td) {
+  color: var(--ifm-font-color-base);
+  padding: calc(var(--ifm-table-cell-padding) * 0.4);
+}
+
+.tableSurface :global(thead th) {
+  background-color: var(--ifm-table-stripe-background);
+  font-weight: var(--ifm-table-head-font-weight);
+}
+
+.tableSurface :global(tbody th) {
+  background-color: var(--ifm-table-background);
+  font-weight: var(--ifm-table-head-font-weight);
+}
+
+.tableSurface :global(tbody tr:nth-child(2n) th) {
+  background-color: var(--ifm-table-stripe-background);
+}
